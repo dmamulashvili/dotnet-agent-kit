@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Dimitri Mamulashvili",
+  "classifications": ["AI", "Agents", "Claude", "ASP.NET Core"],
+  "identity": "DotnetAgentKit.Template",
+  "name": "Agent kit for ASP.NET Core + frontend",
+  "shortName": "agent-kit",
+  "description": "Adds Claude Code config (CLAUDE.md, rules, skills, settings with .NET and frontend plugins) for ASP.NET Core with a frontend of choice.",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "MyApp",
+  "symbols": {
+    "frontend": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "svelte",
+      "description": "Frontend framework the agent config targets",
+      "choices": [
+        { "choice": "svelte", "description": "SvelteKit with Svelte 5" },
+        { "choice": "blazor", "description": "Blazor Web App" }
+      ]
+    },
+    "isSvelte": {
+      "type": "computed",
+      "value": "(frontend == \"svelte\")"
+    },
+    "isBlazor": {
+      "type": "computed",
+      "value": "(frontend == \"blazor\")"
+    }
+  },
+  "sources": [
+    {
+      "exclude": [
+        ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(isSvelte)",
+          "exclude": [".claude/settings.blazor.json"],
+          "rename": { ".claude/settings.svelte.json": ".claude/settings.json" }
+        },
+        {
+          "condition": "(isBlazor)",
+          "exclude": [".claude/settings.svelte.json"],
+          "rename": { ".claude/settings.blazor.json": ".claude/settings.json" }
+        }
+      ]
+    }
+  ],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["<!--#if"],
+            "else": ["<!--#else"],
+            "elseif": ["<!--#elseif"],
+            "endif": ["<!--#endif"],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    }
+  }
+}

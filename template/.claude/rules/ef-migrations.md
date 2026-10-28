@@ -1,0 +1,11 @@
+## EF Core migration rules
+
+- Create migrations only with `dotnet ef migrations add <Name>`, named for the change (`AddOrderStatus`, not `Update1`). With more than one `DbContext` (one per module), always pass `--context`, and `--project` / `--startup-project` when the context lives outside the API project.
+- After changing entities or their configuration, check `dotnet ef migrations has-pending-model-changes`; if the model changed, add a migration in the same change.
+- After adding a migration, read the generated `Up` and `Down` and the model snapshot diff, and confirm they contain only the intended change.
+- Never edit or delete a migration that may have been applied outside your machine (merged, or deployed anywhere). Fix it with a new migration.
+- To undo a migration that exists only locally, use `dotnet ef migrations remove` without `--force`; don't delete the files by hand. `--force` also reverts the database.
+- Flag any migration that drops or renames a column or table, changes a column type, or adds a non-nullable column without a default to existing rows: these lose data or fail on existing data. Propose a safe sequence instead (add, backfill, then remove in a later migration).
+- `dotnet ef database update` runs only against a local database, only to the latest migration, and only after the migration was reviewed (so never with `--add`). Updating to an older migration or `0` runs `Down` and loses data; `dotnet ef database drop` deletes the database. Run either only when I explicitly ask.
+- EF Core 11+: the model snapshot records the latest migration ID, so migrations added on two branches conflict in the snapshot on merge. Don't resolve that conflict by hand: remove one branch's new migrations and add a single migration again on top of the other. Keep shared `dotnet ef` options (`project`, `startupProject`, `context`) in `.config/dotnet-ef.json` instead of repeating them.
+- Never pass `--connection` or `-- --environment` pointing at a shared or production database. Deployments apply migrations through an idempotent script (`dotnet ef migrations script --idempotent`) or a migration bundle (`dotnet ef migrations bundle`), not `database update`.

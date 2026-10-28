@@ -1,0 +1,2 @@
+# Bash fails on CRLF line endings, and dotnet pack ships the working copy.
+*.sh text eol=lf
