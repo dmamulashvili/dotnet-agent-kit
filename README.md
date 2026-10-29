@@ -43,8 +43,17 @@ When you first open the project in Claude Code, accept the folder trust prompt. 
 
 Generate the files with `dotnet new` rather than copying them from the template folder: `CLAUDE.md` contains `<!--#if -->` blocks and the `MyApp` placeholder that only `dotnet new` resolves.
 
+If the project has no `CLAUDE.md` or `.claude/` folder yet, run it in the project root:
+
 ```bash
-dotnet new agent-kit --frontend blazor -n Orders -o ../kit-tmp   # -n replaces "MyApp"
+dotnet new agent-kit --frontend blazor --dry-run   # preview the files it creates
+dotnet new agent-kit --frontend blazor             # MyApp becomes the folder name; -n Orders to choose
+```
+
+If files already exist, `dotnet new` lists the conflicts and stops. Don't pass `--force`: it overwrites your `CLAUDE.md` and settings. Generate into a temporary folder instead and merge:
+
+```bash
+dotnet new agent-kit --frontend blazor -n Orders -o ../kit-tmp
 ```
 
 Copy these from `../kit-tmp` into the project root:
