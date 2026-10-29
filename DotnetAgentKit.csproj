@@ -6,8 +6,8 @@
     <PackageVersion>0.1.0</PackageVersion>
     <Title>.NET Agent Kit</Title>
     <Authors>Dimitri Mamulashvili</Authors>
-    <Description>dotnet new template that adds AI coding agent config for ASP.NET Core with a frontend of choice.</Description>
-    <PackageTags>dotnet-new;templates;ai;agents;claude;aspnetcore;svelte</PackageTags>
+    <Description>dotnet new template that adds Claude Code config (CLAUDE.md, rules, skills, agents, plugins) to ASP.NET Core projects with SvelteKit, Blazor, or no frontend.</Description>
+    <PackageTags>dotnet-new;templates;ai;agents;claude;claude-code;aspnetcore;efcore;svelte;blazor</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 

@@ -54,6 +54,6 @@ Never write a batch of tests up front and then implement them all: that tests im
 
 ## Practicalities
 
-- If the test project can't reference `Program` for `WebApplicationFactory<Program>`, add `public partial class Program { }` to the API project.
+- Since .NET 10, a source generator makes the top-level `Program` class public, so `WebApplicationFactory<Program>` works without declaring `public partial class Program { }`. Add that declaration only on earlier versions.
 - Pass `TestContext.Current.CancellationToken` (xUnit v3) to async calls in tests.
 - Run the narrowest set of tests that covers the change while iterating, then the full suite before finishing.

@@ -3,9 +3,9 @@
   "author": "Dimitri Mamulashvili",
   "classifications": ["AI", "Agents", "Claude", "ASP.NET Core"],
   "identity": "DotnetAgentKit.Template",
-  "name": "Agent kit for ASP.NET Core + frontend",
+  "name": "Agent kit for ASP.NET Core",
   "shortName": "agent-kit",
-  "description": "Adds Claude Code config (CLAUDE.md, rules, skills, settings with .NET and frontend plugins) for ASP.NET Core with a frontend of choice.",
+  "description": "Adds Claude Code config (CLAUDE.md, rules, skills, agents, settings with .NET and frontend plugins) for ASP.NET Core with SvelteKit, Blazor, or no frontend.",
   "tags": {
     "language": "C#",
     "type": "item"

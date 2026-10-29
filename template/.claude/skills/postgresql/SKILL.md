@@ -1,6 +1,6 @@
 ---
 name: postgresql
-description: PostgreSQL gotchas and version-gated facts - indexing (B-tree, GIN, GiST, BRIN, partial, expression), JSONB, EXPLAIN ANALYZE and tuning, row-level security and multi-tenancy, full-text search, partitioning, connection pooling, extensions, logical replication, pgvector and RAG. Use when designing tables or indexes for PostgreSQL, writing or reviewing raw SQL, diagnosing a slow query, or choosing a PostgreSQL feature. For EF Core query shape and migrations use the dotnet-data plugin's skills.
+description: PostgreSQL gotchas and version-gated facts - indexing (B-tree, GIN, GiST, BRIN, partial, expression), JSONB, EXPLAIN ANALYZE and tuning, row-level security and multi-tenancy, full-text search, partitioning, connection pooling, extensions, logical replication, pgvector and RAG. Use when designing tables or indexes for PostgreSQL, writing or reviewing raw SQL, diagnosing a slow query, or choosing a PostgreSQL feature. For EF Core query performance use the optimizing-ef-core-queries skill; for migrations follow the ef-migrations rule.
 ---
 
 # PostgreSQL

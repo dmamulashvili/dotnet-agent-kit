@@ -1,6 +1,6 @@
 # dotnet-agent-kit
 
-`dotnet new` template that adds AI coding agent config (Claude Code: `CLAUDE.md`, rules, skills, settings) to an ASP.NET Core project with a SvelteKit or Blazor frontend, or an API-only project.
+`dotnet new` template that adds AI coding agent config (Claude Code: `CLAUDE.md`, rules, skills, settings) to an ASP.NET Core project with SvelteKit, Blazor, or no frontend.
 
 ## Prerequisites
 

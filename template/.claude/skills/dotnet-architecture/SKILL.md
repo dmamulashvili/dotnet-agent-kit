@@ -78,7 +78,7 @@ When the solution becomes a modular monolith:
 - Bulk changes that need no domain logic use `ExecuteUpdateAsync` / `ExecuteDeleteAsync` instead of loading entities.
 - Map value objects and nested data as complex types (`ComplexProperty`, with `.ToJson()` for a JSON column), not owned entities.
 - Soft delete and multi-tenancy use named query filters (`HasQueryFilter("SoftDelete", ...)`), so a query can turn off one filter with `IgnoreQueryFilters(["SoftDelete"])` and keep the rest.
-- Use optimistic concurrency tokens on entities edited concurrently. For EF Core query and migration specifics, use the `dotnet-data` plugin's skills.
+- Use optimistic concurrency tokens on entities edited concurrently. For slow or incorrect EF Core queries, use the `optimizing-ef-core-queries` skill from the `dotnet-data` plugin; for migrations, follow the `ef-migrations` rule.
 
 ## Cross-cutting concerns
 

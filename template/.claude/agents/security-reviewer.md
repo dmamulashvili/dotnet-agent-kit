@@ -22,7 +22,7 @@ You review the security of the code you are pointed at, or of the current change
 - Path traversal: user input in file paths without `Path.GetFullPath` plus a base-directory check.
 - Server-side request forgery: user-supplied URLs fetched without an allowlist.
 - Unencoded output: `MarkupString` (Blazor) or `{@html}` (Svelte) with user data.
-- Open redirects from unvalidated `returnUrl` parameters (use `LocalRedirect` / `Url.IsLocalUrl`).
+- Open redirects from unvalidated `returnUrl` parameters (use `LocalRedirect` / `Url.IsLocalUrl`, or `RedirectHttpResult.IsLocalUrl` in minimal APIs).
 
 ## Secrets and configuration
 
