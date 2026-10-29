@@ -1,18 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "extraKnownMarketplaces": {
-    "dotnet-agent-skills": {
-      "source": {
-        "source": "github",
-        "repo": "dotnet/skills"
-      }
-    },
+//#if (isSvelte)
     "svelte": {
       "source": {
         "source": "github",
         "repo": "sveltejs/ai-tools"
       }
     },
+//#endif
+//#if (!isNone)
     "agent-browser": {
       "source": {
         "source": "github",
@@ -25,6 +22,13 @@
         "repo": "anthropics/claude-plugins-official"
       }
     },
+//#endif
+    "dotnet-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "dotnet/skills"
+      }
+    },
     "docker": {
       "source": {
         "source": "github",
@@ -33,6 +37,16 @@
     }
   },
   "enabledPlugins": {
+//#if (isSvelte)
+    "svelte@svelte": true,
+//#endif
+//#if (isBlazor)
+    "dotnet-blazor@dotnet-agent-skills": true,
+//#endif
+//#if (!isNone)
+    "frontend-design@claude-plugins-official": true,
+    "agent-browser@agent-browser": true,
+//#endif
     "dotnet@dotnet-agent-skills": true,
     "dotnet-aspnetcore@dotnet-agent-skills": true,
     "dotnet-data@dotnet-agent-skills": true,
@@ -40,9 +54,6 @@
     "dotnet-diag@dotnet-agent-skills": true,
     "dotnet-msbuild@dotnet-agent-skills": true,
     "dotnet-nuget@dotnet-agent-skills": true,
-    "svelte@svelte": true,
-    "frontend-design@claude-plugins-official": true,
-    "agent-browser@agent-browser": true,
     "docker-skills@docker": true
   },
   "attribution": {

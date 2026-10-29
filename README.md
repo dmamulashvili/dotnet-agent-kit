@@ -288,7 +288,7 @@ dotnet new agent-kit --frontend blazor -o ./sandbox/blazor
 dotnet new agent-kit --frontend none -o ./sandbox/none
 ```
 
-Each `--frontend` value has its own settings file, `template/.claude/settings.<frontend>.json`, which is renamed to `.claude/settings.json` on generation. Shared parts (attribution, git permissions, the `dotnet*` plugins) are duplicated in each file, so change them in every file.
+`template/.claude/settings.jsonc` is one file for every `--frontend` value, generated as `.claude/settings.json`. Frontend-only marketplaces and plugins sit in `//#if (isSvelte)`, `//#if (isBlazor)`, or `//#if (!isNone)` blocks, which `dotnet new` resolves and removes; the `.jsonc` extension keeps editors from flagging those lines. Keep conditional entries above the shared ones in each object, so every entry inside a block ends with a comma and the output stays valid JSON.
 
 Pack:
 

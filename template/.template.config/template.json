@@ -41,26 +41,27 @@
       "exclude": [
         ".template.config/**"
       ],
-      "modifiers": [
-        {
-          "condition": "(isSvelte)",
-          "exclude": [".claude/settings.blazor.json", ".claude/settings.none.json"],
-          "rename": { ".claude/settings.svelte.json": ".claude/settings.json" }
-        },
-        {
-          "condition": "(isBlazor)",
-          "exclude": [".claude/settings.svelte.json", ".claude/settings.none.json"],
-          "rename": { ".claude/settings.blazor.json": ".claude/settings.json" }
-        },
-        {
-          "condition": "(isNone)",
-          "exclude": [".claude/settings.svelte.json", ".claude/settings.blazor.json"],
-          "rename": { ".claude/settings.none.json": ".claude/settings.json" }
-        }
-      ]
+      "rename": {
+        ".claude/settings.jsonc": ".claude/settings.json"
+      }
     }
   ],
   "SpecialCustomOperations": {
+    "**/*.jsonc": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["//#if"],
+            "else": ["//#else"],
+            "elseif": ["//#elseif"],
+            "endif": ["//#endif"],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    },
     "**/*.md": {
       "operations": [
         {
