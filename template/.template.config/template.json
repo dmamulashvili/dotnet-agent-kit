@@ -34,6 +34,12 @@
         { "choice": "other", "description": "Another database, with no database-specific guidance" }
       ]
     },
+    "aspire": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "The solution uses Aspire to run the app and its resources"
+    },
     "isPostgres": {
       "type": "computed",
       "value": "(database == \"postgres\")"

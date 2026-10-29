@@ -23,6 +23,14 @@
       }
     },
 //#endif
+//#if (aspire)
+    "aspire-skills": {
+      "source": {
+        "source": "github",
+        "repo": "microsoft/aspire-skills"
+      }
+    },
+//#endif
     "dotnet-agent-skills": {
       "source": {
         "source": "github",
@@ -46,6 +54,9 @@
 //#if (!isNone)
     "frontend-design@claude-plugins-official": true,
     "agent-browser@agent-browser": true,
+//#endif
+//#if (aspire)
+    "aspire@aspire-skills": true,
 //#endif
     "dotnet@dotnet-agent-skills": true,
     "dotnet-aspnetcore@dotnet-agent-skills": true,

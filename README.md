@@ -7,6 +7,7 @@
 - .NET 10 SDK or later. The C# language server from the `dotnet` plugin runs through `dotnet dnx`.
 - For `--frontend svelte` or `blazor`: the `agent-browser` CLI, `npm i -g agent-browser && agent-browser install`.
 - For `--frontend svelte`: Node.js, for the Svelte CLI (`npx @sveltejs/mcp`).
+- For `--aspire`: the [Aspire CLI](https://aspire.dev), for example `dotnet tool install -g Aspire.Cli`.
 
 ## Install
 
@@ -30,6 +31,7 @@ Run in your project root:
 dotnet new agent-kit --frontend svelte
 dotnet new agent-kit --frontend blazor --database sqlserver
 dotnet new agent-kit --frontend none --database other
+dotnet new agent-kit --frontend blazor --aspire
 dotnet new agent-kit --help
 ```
 
@@ -37,8 +39,9 @@ dotnet new agent-kit --help
 |---|---|---|
 | `--frontend` | `svelte`, `blazor`, `none` (API only) | `svelte` |
 | `--database` | `postgres`, `sqlserver`, `other` (no database-specific guidance) | `postgres` |
+| `--aspire` | flag | off |
 
-`--database` sets the EF Core provider and Testcontainers module named in `CLAUDE.md`, and ships the `postgresql` skill only for `postgres`.
+`--database` sets the EF Core provider and Testcontainers module named in `CLAUDE.md`, and ships the `postgresql` skill only for `postgres`. `--aspire` enables the official Aspire plugin and tells the agent to run the app with `aspire start` and to add resources in the AppHost. Aspire's MCP server isn't configured; add it with `aspire agent init --mcp` if you want it.
 
 When you first open the project in Claude Code, accept the folder trust prompt. Claude Code then registers the marketplaces below and offers to install the plugins.
 
@@ -262,7 +265,7 @@ Run it every few weeks or when a feature was painful to add. It looks at the fil
 
 The generated `.claude/settings.json` enables these plugins. They install from their upstream marketplaces and stay up to date, so nothing third-party is copied into your project.
 
-| Plugin | Frontend | Marketplace | What it adds | License |
+| Plugin | Enabled for | Marketplace | What it adds | License |
 |---|---|---|---|---|
 | `dotnet` | all | [dotnet/skills](https://github.com/dotnet/skills) | C# language server (go to definition, references, diagnostics), C# refactoring, MSBuild guidance | MIT |
 | `dotnet-aspnetcore` | all | [dotnet/skills](https://github.com/dotnet/skills) | Web API endpoints with correct HTTP semantics, OpenAPI metadata, and error handling | MIT |
@@ -276,6 +279,7 @@ The generated `.claude/settings.json` enables these plugins. They install from t
 | `agent-browser` | svelte, blazor | [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) | Lets the agent drive a real browser to check its own UI changes | Apache-2.0 |
 | `svelte` | svelte | [sveltejs/ai-tools](https://github.com/sveltejs/ai-tools) | Svelte 5 best practices, docs lookup and `svelte-autofixer` (skills and MCP server), a `svelte-file-editor` subagent | MIT |
 | `dotnet-blazor` | blazor | [dotnet/skills](https://github.com/dotnet/skills) | Blazor components, render modes, prerendering, auth, forms, JS interop | MIT |
+| `aspire` | `--aspire` | [microsoft/aspire-skills](https://github.com/microsoft/aspire-skills) | Aspire CLI workflows: adding Aspire, wiring resources in the AppHost, starting and stopping the app safely, logs and traces, deployment | MIT |
 
 To turn one off for yourself, set it to `false` in `.claude/settings.local.json`, for example `"enabledPlugins": { "agent-browser@agent-browser": false }`.
 
