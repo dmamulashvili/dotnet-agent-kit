@@ -52,6 +52,7 @@ You review the current changes in this repository. You report findings and never
 - `$effect` used to derive state instead of `$derived`.
 - Values derived from props without `$derived`, so they don't update.
 - Unkeyed `{#each}` blocks over lists that change.
+
 <!--#elseif (isBlazor) -->
 ## Blazor
 
@@ -59,8 +60,8 @@ You review the current changes in this repository. You report findings and never
 - Logic in components that belongs in injected services.
 - Data loaded twice under prerendering without persisted state.
 - JS interop called before the component has rendered (`OnAfterRenderAsync`).
-<!--#endif -->
 
+<!--#endif -->
 ## Tests
 
 - New behavior without a test, or tests that only verify mocks were called.
