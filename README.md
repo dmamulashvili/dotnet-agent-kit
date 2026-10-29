@@ -1,13 +1,11 @@
 # dotnet-agent-kit
 
-`dotnet new` template that adds AI coding agent config (Claude Code: `CLAUDE.md`, rules, skills, settings) to an ASP.NET Core project with a SvelteKit or Blazor frontend.
-
-New to Claude Code? Start with [Getting started](docs/getting-started.md): install, adding the kit to an existing project, teaching it your domain, and day-to-day habits.
+`dotnet new` template that adds AI coding agent config (Claude Code: `CLAUDE.md`, rules, skills, settings) to an ASP.NET Core project with a SvelteKit or Blazor frontend, or an API-only project.
 
 ## Prerequisites
 
 - .NET 10 SDK or later. The C# language server from the `dotnet` plugin runs through `dotnet dnx`.
-- The `agent-browser` CLI: `npm i -g agent-browser && agent-browser install`.
+- For `--frontend svelte` or `blazor`: the `agent-browser` CLI, `npm i -g agent-browser && agent-browser install`.
 - For `--frontend svelte`: Node.js, for the Svelte CLI (`npx @sveltejs/mcp`).
 
 ## Install
@@ -31,14 +29,87 @@ Run in your project root:
 ```bash
 dotnet new agent-kit --frontend svelte
 dotnet new agent-kit --frontend blazor
+dotnet new agent-kit --frontend none
 dotnet new agent-kit --help
 ```
 
 | Option | Values | Default |
 |---|---|---|
-| `--frontend` | `svelte`, `blazor` | `svelte` |
+| `--frontend` | `svelte`, `blazor`, `none` (API only) | `svelte` |
 
 When you first open the project in Claude Code, accept the folder trust prompt. Claude Code then registers the marketplaces below and offers to install the plugins.
+
+## Add to an existing project
+
+Generate the files with `dotnet new` rather than copying them from the template folder: `CLAUDE.md` contains `<!--#if -->` blocks and the `MyApp` placeholder that only `dotnet new` resolves.
+
+```bash
+dotnet new agent-kit --frontend blazor -n Orders -o ../kit-tmp   # -n replaces "MyApp"
+```
+
+Copy these from `../kit-tmp` into the project root:
+
+| Copy | Notes |
+|---|---|
+| `CLAUDE.md` | Merge by hand if the project already has one |
+| `.claude/rules/` | `git.md`, `ef-migrations.md` |
+| `.claude/skills/` | All folders, including their `LICENSE*.txt` files |
+| `.claude/agents/` | `architect`, `code-reviewer`, `security-reviewer` |
+| `.claude/settings.json` | Merge if one exists. Personal overrides go in `.claude/settings.local.json`, which stays out of git |
+
+Commit this on a branch before Claude changes anything, so every later edit to `CLAUDE.md` shows up as a diff you can review. If a Claude Code session is already open in the project, exit it; `claude -c` starts a new one that loads the kit and continues the last conversation.
+
+### Let Claude learn the project
+
+Start `claude`, accept the trust prompt and plugins, then:
+
+1. **Run `/init`.** It analyzes the codebase and, since `CLAUDE.md` exists, suggests improvements instead of overwriting it: real build and test commands, folder layout, conventions it finds. For an interactive version that asks follow-up questions and shows a proposal before writing, set `CLAUDE_CODE_NEW_INIT=1` before starting `claude`.
+2. **Reconcile the kit with the codebase.** The kit's defaults are opinions; find where your project differs:
+   > Compare `CLAUDE.md`, `.claude/rules/`, and the `dotnet-architecture` skill with how this codebase actually works. List every place they disagree (for example: we use controllers, MediatR, repositories, SQL Server not PostgreSQL). For each, propose whether to change `CLAUDE.md` to describe what we do, or keep the kit default as the direction for new code. Don't edit yet.
+
+   Decide each point, then let it apply the edits.
+
+### Teach it the domain
+
+`/init` learns structure from code, but it guesses business meaning from names, and guesses are often wrong: an "account" becomes a user login when it's really the customer organization that is billed and that many users belong to. Wrong guesses written into `CLAUDE.md` mislead every later session, so correct them early.
+
+In a fresh session, have it explain the product back to you first. Its mistakes show you what to teach:
+
+```
+I want you to learn this product's domain and business before we change anything.
+
+First, explain the product to me as you understand it from the code and docs:
+- Who uses it and what problem it solves for them
+- The main concepts (for example account, order) and how they relate
+- The main flows: what a user does, what happens with the data
+
+For each concept and flow, tell me how confident you are and where it comes from (code, docs, or guessed from a name). Don't edit any files.
+```
+
+Then correct it, starting with the biggest mistake:
+
+```
+/grill-with-docs Correct your model of the domain, starting with "account". An account is not a user: it's the customer organization we bill; users belong to it. Ask me one question at a time, push on edge cases, and record each settled term in GLOSSARY.md.
+```
+
+- Answer edge-case questions concretely ("an account outlives its users; removing the last user doesn't close the account"). Those answers become the glossary entries and ADRs in `docs/adr/`.
+- Wrong aliases go under `_Avoid_` in the glossary entry (`_Avoid_: User`), which stops the same mistake from coming back.
+- Paste what you already have: product overview, PRDs, onboarding notes.
+- One area per session (accounts and orders, then billing, ...). The glossary carries the knowledge into the next session, so `/clear` freely.
+
+Finish by aligning the instructions with the glossary:
+
+```
+Update the CLAUDE.md files and rules to match GLOSSARY.md: fix contradictions, and replace domain definitions with a pointer to the glossary. Show me the diff first.
+```
+
+To stop new guesses, add this to the Conventions in `CLAUDE.md`: "Don't infer what a domain term means from its name or code. Check `GLOSSARY.md`; if a term is missing or unclear, ask me instead of guessing."
+
+### Keep it accurate
+
+- Keep `CLAUDE.md` under about 200 lines. Instructions for one area go in a nested `CLAUDE.md` (e.g. `web/CLAUDE.md`) or a rule with `paths:` frontmatter; both load only when files there are touched.
+- After a session where you had to correct the agent, run `/retro` and accept the edits that would have prevented it.
+- Review the first few `CLAUDE.md` edits closely; a wrong instruction there misleads every later session.
 
 ## Included
 
@@ -109,8 +180,6 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
 - **`writing-for-agents`** (auto): the style guide used when editing skills, agents, or `CLAUDE.md`; `retro` relies on it.
 
 ## Day-to-day workflow
-
-New to coding agents? Start with [Getting started](docs/getting-started.md): install, permission modes, steering, and writing a good request.
 
 Match the ceremony to the size of the change. Most work is the first two cases; the rest are for when the stakes or the confusion are higher.
 
@@ -186,13 +255,13 @@ The generated `.claude/settings.json` enables these plugins. They install from t
 | `dotnet` | all | [dotnet/skills](https://github.com/dotnet/skills) | C# language server (go to definition, references, diagnostics), C# refactoring, MSBuild guidance | MIT |
 | `dotnet-aspnetcore` | all | [dotnet/skills](https://github.com/dotnet/skills) | Web API endpoints with correct HTTP semantics, OpenAPI metadata, and error handling | MIT |
 | `dotnet-data` | all | [dotnet/skills](https://github.com/dotnet/skills) | EF Core query performance and correctness reviews, data-driven scaffolding | MIT |
-| `frontend-design` | all | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | Guidance for distinctive, non-generic UI design | See the plugin |
+| `frontend-design` | svelte, blazor | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | Guidance for distinctive, non-generic UI design | See the plugin |
 | `dotnet-test` | all | [dotnet/skills](https://github.com/dotnet/skills) | Running, generating, and analyzing tests, coverage, and testability | MIT |
 | `dotnet-diag` | all | [dotnet/skills](https://github.com/dotnet/skills) | Performance analysis, `dotnet-trace` and dump collection, microbenchmarking | MIT |
 | `dotnet-msbuild` | all | [dotnet/skills](https://github.com/dotnet/skills) | Build failure diagnosis from binlogs, build performance, `Directory.Build.props` organization, MSBuild anti-patterns | MIT |
 | `dotnet-nuget` | all | [dotnet/skills](https://github.com/dotnet/skills) | Converting a solution to Central Package Management | MIT |
 | `docker-skills` | all | [docker/skills](https://github.com/docker/skills) | Dockerfile, build, and Docker Compose patterns, confirmation before destructive Docker operations (also ships Sandboxes and Docker Agent skills) | Apache-2.0 |
-| `agent-browser` | all | [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) | Lets the agent drive a real browser to check its own UI changes | Apache-2.0 |
+| `agent-browser` | svelte, blazor | [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) | Lets the agent drive a real browser to check its own UI changes | Apache-2.0 |
 | `svelte` | svelte | [sveltejs/ai-tools](https://github.com/sveltejs/ai-tools) | Svelte 5 best practices, docs lookup and `svelte-autofixer` (skills and MCP server), a `svelte-file-editor` subagent | MIT |
 | `dotnet-blazor` | blazor | [dotnet/skills](https://github.com/dotnet/skills) | Blazor components, render modes, prerendering, auth, forms, JS interop | MIT |
 
@@ -207,9 +276,10 @@ dotnet new uninstall ./template
 dotnet new install ./template
 dotnet new agent-kit --frontend svelte -o ./sandbox/svelte
 dotnet new agent-kit --frontend blazor -o ./sandbox/blazor
+dotnet new agent-kit --frontend none -o ./sandbox/none
 ```
 
-Each frontend has its own settings file, `template/.claude/settings.<frontend>.json`, which is renamed to `.claude/settings.json` on generation. Shared parts (attribution, git permissions, the `dotnet*` plugins) are duplicated in each file, so change them in every file.
+Each `--frontend` value has its own settings file, `template/.claude/settings.<frontend>.json`, which is renamed to `.claude/settings.json` on generation. Shared parts (attribution, git permissions, the `dotnet*` plugins) are duplicated in each file, so change them in every file.
 
 Pack:
 

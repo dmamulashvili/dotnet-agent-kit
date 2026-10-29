@@ -6,6 +6,8 @@
 - Frontend: SvelteKit with Svelte 5 runes, in `/web`.
 <!--#elseif (isBlazor) -->
 - Frontend: Blazor Web App.
+<!--#elseif (isNone) -->
+- Frontend: none; this is an API-only project.
 <!--#endif -->
 
 ## Commands
@@ -30,5 +32,7 @@
 <!--#elseif (isBlazor) -->
 - Blazor: set an interactive render mode only on components that need interactivity; keep components small and move logic into injected services.
 <!--#endif -->
+<!--#if (!isNone) -->
 - After UI changes, start the dev server and verify the page with the `agent-browser` skill before finishing.
+<!--#endif -->
 - After code changes, run the `code-reviewer` agent before finishing; also run `security-reviewer` when the change touches auth, input handling, data access, secrets, or external calls. Fix Critical and High findings.

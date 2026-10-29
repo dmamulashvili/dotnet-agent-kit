@@ -19,7 +19,8 @@
       "description": "Frontend framework the agent config targets",
       "choices": [
         { "choice": "svelte", "description": "SvelteKit with Svelte 5" },
-        { "choice": "blazor", "description": "Blazor Web App" }
+        { "choice": "blazor", "description": "Blazor Web App" },
+        { "choice": "none", "description": "No frontend (API only)" }
       ]
     },
     "isSvelte": {
@@ -29,6 +30,10 @@
     "isBlazor": {
       "type": "computed",
       "value": "(frontend == \"blazor\")"
+    },
+    "isNone": {
+      "type": "computed",
+      "value": "(frontend == \"none\")"
     }
   },
   "sources": [
@@ -39,13 +44,18 @@
       "modifiers": [
         {
           "condition": "(isSvelte)",
-          "exclude": [".claude/settings.blazor.json"],
+          "exclude": [".claude/settings.blazor.json", ".claude/settings.none.json"],
           "rename": { ".claude/settings.svelte.json": ".claude/settings.json" }
         },
         {
           "condition": "(isBlazor)",
-          "exclude": [".claude/settings.svelte.json"],
+          "exclude": [".claude/settings.svelte.json", ".claude/settings.none.json"],
           "rename": { ".claude/settings.blazor.json": ".claude/settings.json" }
+        },
+        {
+          "condition": "(isNone)",
+          "exclude": [".claude/settings.svelte.json", ".claude/settings.blazor.json"],
+          "rename": { ".claude/settings.none.json": ".claude/settings.json" }
         }
       ]
     }
