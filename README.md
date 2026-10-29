@@ -1,5 +1,7 @@
 # dotnet-agent-kit
 
+[![NuGet](https://img.shields.io/nuget/v/DotnetAgentKit)](https://www.nuget.org/packages/DotnetAgentKit)
+
 `dotnet new` template that adds AI coding agent config (Claude Code: `CLAUDE.md`, rules, skills, settings) to an ASP.NET Core project with SvelteKit, Blazor, or no frontend.
 
 ## Prerequisites
@@ -11,13 +13,13 @@
 
 ## Install
 
-From NuGet (once published):
+From [NuGet](https://www.nuget.org/packages/DotnetAgentKit):
 
 ```bash
 dotnet new install DotnetAgentKit
 ```
 
-From a local clone:
+From a local clone, to try unreleased changes:
 
 ```bash
 dotnet new install ./template
