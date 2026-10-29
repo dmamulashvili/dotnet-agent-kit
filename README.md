@@ -28,14 +28,17 @@ Run in your project root:
 
 ```bash
 dotnet new agent-kit --frontend svelte
-dotnet new agent-kit --frontend blazor
-dotnet new agent-kit --frontend none
+dotnet new agent-kit --frontend blazor --database sqlserver
+dotnet new agent-kit --frontend none --database other
 dotnet new agent-kit --help
 ```
 
 | Option | Values | Default |
 |---|---|---|
 | `--frontend` | `svelte`, `blazor`, `none` (API only) | `svelte` |
+| `--database` | `postgres`, `sqlserver`, `other` (no database-specific guidance) | `postgres` |
+
+`--database` sets the EF Core provider and Testcontainers module named in `CLAUDE.md`, and ships the `postgresql` skill only for `postgres`.
 
 When you first open the project in Claude Code, accept the folder trust prompt. Claude Code then registers the marketplaces below and offers to install the plugins.
 
@@ -142,7 +145,7 @@ Copied into the project's `.claude/` folder:
 | Skill | `pr` | Writes PR bodies: visual summary, before/after evidence, merge danger (one-way door, blast radius) |
 | Skill | `codebase-design` | Deep-module vocabulary (module, interface, seam, adapter, depth), deepening by dependency category, design-it-twice with parallel subagents |
 | Skill | `improve-codebase-architecture` | `/improve-codebase-architecture`: finds deepening opportunities in hot spots, renders an HTML report, then grills through the one you pick |
-| Skill | `postgresql` | PostgreSQL gotchas by area: indexing, JSONB, `EXPLAIN ANALYZE`, row-level security, full-text search, partitioning, pooling, extensions, replication, pgvector |
+| Skill | `postgresql` | With `--database postgres`. PostgreSQL gotchas by area: indexing, JSONB, `EXPLAIN ANALYZE`, row-level security, full-text search, partitioning, pooling, extensions, replication, pgvector |
 | Agent | `architect` | Read-only planning: affected areas, API contract, data model, test plan, steps, risks |
 | Agent | `code-reviewer` | Reviews the diff for C#, EF Core, and frontend pitfalls, ranked by severity |
 | Agent | `security-reviewer` | Reviews auth, input handling, secrets, and data exposure |
@@ -168,7 +171,7 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
 
 - **`tdd`** (auto): red-green loop with xUnit, `WebApplicationFactory`, and Testcontainers against the real database engine, not the in-memory provider. Tests survive refactors because they assert behavior at a seam.
 - **`ef-migrations`** (rule, always on): migrations are created with `dotnet ef`, reviewed after generation, never edited once applied, and data-losing changes are flagged with a safe add-backfill-remove sequence. `database update` stays local; deployments use idempotent scripts or bundles. `settings.json` denies `dotnet ef database drop` and `database update 0` outright, so those don't depend on the agent following the rule.
-- **`postgresql`** (auto): short lists of what models get wrong about PostgreSQL, one area per file, loaded only for the area at hand: GIN doesn't help `->>` equality, `JSON_TABLE` needs PG 17, the table owner bypasses RLS unless it's forced, and so on. Useful when EF Core's defaults aren't enough and you need the right index, a JSONB column, or tenant isolation in the database.
+- **`postgresql`** (auto, `--database postgres` only): short lists of what models get wrong about PostgreSQL, one area per file, loaded only for the area at hand: GIN doesn't help `->>` equality, `JSON_TABLE` needs PG 17, the table owner bypasses RLS unless it's forced, and so on. Useful when EF Core's defaults aren't enough and you need the right index, a JSONB column, or tenant isolation in the database.
 - **`diagnosing-bugs`** (auto): a phased loop for hard bugs and performance regressions: build a fast, reliable repro first, then hypothesise and instrument. Stops the agent from guessing at fixes.
 
 ### Reviewing

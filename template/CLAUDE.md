@@ -2,6 +2,11 @@
 
 ## Stack
 - Backend: ASP.NET Core Web API (.NET 10), EF Core.
+<!--#if (isPostgres) -->
+- Database: PostgreSQL via `Npgsql.EntityFrameworkCore.PostgreSQL`; integration tests use `Testcontainers.PostgreSql`.
+<!--#elseif (isSqlServer) -->
+- Database: SQL Server via `Microsoft.EntityFrameworkCore.SqlServer`; integration tests use `Testcontainers.MsSql`.
+<!--#endif -->
 <!--#if (isSvelte) -->
 - Frontend: SvelteKit with Svelte 5 runes, in `/web`.
 <!--#elseif (isBlazor) -->
