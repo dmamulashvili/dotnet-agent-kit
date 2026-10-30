@@ -98,7 +98,7 @@ When the solution becomes a modular monolith:
 ## Dependency injection
 
 - Register by feature or module through extension methods, not one giant `Program.cs`.
-- Constructor injection with primary constructors. No service locator (`IServiceProvider.GetService` in business code).
+- Constructor injection with primary constructors. Their parameters are mutable captures, not `readonly` fields: never reassign one, and assign it to a `private readonly` field when the class is large or the value must not change. No service locator (`IServiceProvider.GetService` in business code).
 - Lifetimes: `DbContext` and anything holding it scoped; stateless services scoped or singleton; never inject a scoped service into a singleton.
 - Interfaces only where there is more than one implementation or a test needs to replace something you don't own; a concrete class with one implementation needs no interface.
 

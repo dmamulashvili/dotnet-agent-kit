@@ -20,6 +20,7 @@ You review the current changes in this repository. You report findings and never
 - Swallowed exceptions: empty `catch`, or catch-and-return-null without logging.
 - Missing `using` / `await using` on disposables; `new HttpClient()` per call instead of `IHttpClientFactory`.
 - DI lifetime bugs: scoped services (e.g. `DbContext`) captured by singletons or background services.
+- A primary constructor parameter reassigned after construction (`db = new AppDbContext(...)`): every later call in that instance uses the replacement, not the injected dependency. Don't reassign it; copy it to a `private readonly` field if it must not change.
 - Nullable warnings suppressed with `!` without a reason.
 - Endpoints returning EF entities, missing validation, wrong status codes, or errors not using ProblemDetails (see the `api-design` skill).
 - Business logic in endpoints instead of handlers, services, or the entity.
