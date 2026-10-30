@@ -3,7 +3,7 @@
 - Create migrations only with `dotnet ef migrations add <Name>`, named for the change (`AddOrderStatus`, not `Update1`). With more than one `DbContext` (one per module), always pass `--context`, and `--project` / `--startup-project` when the context lives outside the API project.
 - After changing entities or their configuration, check `dotnet ef migrations has-pending-model-changes`; if the model changed, add a migration in the same change.
 - After adding a migration, read the generated `Up` and `Down` and the model snapshot diff, and confirm they contain only the intended change.
-- Never edit or delete a migration that may have been applied outside your machine (merged, or deployed anywhere). Fix it with a new migration.
+- Never edit or delete a migration that may have been applied outside your machine (merged, or deployed anywhere). Fix it with a new migration. A hook blocks edits to migrations that are already on any remote branch; don't work around it with shell commands.
 - To undo a migration that exists only locally, use `dotnet ef migrations remove` without `--force`; don't delete the files by hand. `--force` also reverts the database.
 - Flag any migration that drops or renames a column or table, changes a column type, or adds a non-nullable column without a default to existing rows: these lose data or fail on existing data. Propose a safe sequence instead (add, backfill, then remove in a later migration).
 - `dotnet ef database update` runs only against a local database, only to the latest migration, and only after the migration was reviewed (so never with `--add`). Updating to an older migration or `0` runs `Down` and loses data; `dotnet ef database drop` deletes the database. Run either only when I explicitly ask.

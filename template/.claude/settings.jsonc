@@ -67,6 +67,19 @@
     "dotnet-nuget@dotnet-agent-skills": true,
     "docker-skills@docker": true
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-applied-migrations.sh\""
+          }
+        ]
+      }
+    ]
+  },
   "attribution": {
     "commit": "",
     "pr": "",
@@ -132,6 +145,10 @@
       "Bash(dotnet ef database drop*)",
       "Bash(dotnet ef database update 0)",
       "Bash(dotnet ef database update 0 *)",
+      "Bash(dotnet user-secrets list*)",
+      "PowerShell(dotnet user-secrets list*)",
+      "Read(~/AppData/Roaming/Microsoft/UserSecrets/**)",
+      "Read(~/.microsoft/usersecrets/**)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(!.env.example)"

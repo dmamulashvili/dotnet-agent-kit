@@ -72,6 +72,7 @@ Copy these from `../kit-tmp` into the project root:
 | `.claude/rules/` | `git.md`, `ef-migrations.md` |
 | `.claude/skills/` | All folders, including their `LICENSE*.txt` files |
 | `.claude/agents/` | `architect`, `code-reviewer`, `security-reviewer` |
+| `.claude/hooks/` | `protect-applied-migrations.sh`, run by `settings.json` |
 | `.claude/settings.json` | Merge if one exists. Personal overrides go in `.claude/settings.local.json`, which stays out of git |
 
 Commit this on a branch before Claude changes anything, so every later edit to `CLAUDE.md` shows up as a diff you can review. If a Claude Code session is already open in the project, exit it; `claude -c` starts a new one that loads the kit and continues the last conversation.
@@ -172,7 +173,8 @@ Copied into the project's `.claude/` folder:
 | Agent | `architect` | Read-only planning: affected areas, API contract, data model, test plan, steps, risks |
 | Agent | `code-reviewer` | Reviews the diff for C#, EF Core, and frontend pitfalls, ranked by severity |
 | Agent | `security-reviewer` | Reviews auth, input handling, secrets, and data exposure |
-| Settings | `settings.json` | Disables commit/PR attribution, git permission guardrails, blocks `dotnet ef database drop` and `database update 0`, `.env` read block, plugins below |
+| Hook | `protect-applied-migrations` | Blocks edits to EF Core migrations that are already on any remote branch; migrations that exist only locally stay editable |
+| Settings | `settings.json` | Disables commit/PR attribution, git permission guardrails, blocks `dotnet ef database drop` and `database update 0`, blocks reading `.env` files and user secrets (the secrets folders and `dotnet user-secrets list`), runs the migration hook, plugins below |
 
 `grilling`, `grill-me`, `domain-modeling`, `grill-with-docs`, `retro`, `writing-for-agents`, `diagnosing-bugs`, `handoff`, `pr`, `codebase-design`, and `improve-codebase-architecture` are from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), shipped unchanged with their license. Part of `pr` comes from HumanLayer's `show-me` skill in [humanlayer/skills](https://github.com/humanlayer/skills) (MIT); its license is included as `LICENSE-humanlayer.txt`. The `tdd` skill's loop rules are adapted from the same repo. The `postgresql` skill's references are the vendor-neutral PostgreSQL references from [microsoft/postgres-skills](https://github.com/microsoft/postgres-skills) (MIT, commit `9ba96ab`), with their pointers to Azure-only references removed; its `SKILL.md` is ours. The Azure Database for PostgreSQL and Apache AGE skills and the `postgres-mcp` server are not included.
 
@@ -193,7 +195,7 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
 ### Building
 
 - **`tdd`** (auto): red-green loop with xUnit, `WebApplicationFactory`, and Testcontainers against the real database engine, not the in-memory provider. Tests survive refactors because they assert behavior at a seam.
-- **`ef-migrations`** (rule, always on): migrations are created with `dotnet ef`, reviewed after generation, never edited once applied, and data-losing changes are flagged with a safe add-backfill-remove sequence. `database update` stays local; deployments use idempotent scripts or bundles. `settings.json` denies `dotnet ef database drop` and `database update 0` outright, so those don't depend on the agent following the rule.
+- **`ef-migrations`** (rule, always on): migrations are created with `dotnet ef`, reviewed after generation, never edited once applied, and data-losing changes are flagged with a safe add-backfill-remove sequence. `database update` stays local; deployments use idempotent scripts or bundles. `settings.json` denies `dotnet ef database drop` and `database update 0` outright, and the `protect-applied-migrations` hook blocks edits to migrations that are already on any remote branch, so those don't depend on the agent following the rule. The hook needs Bash (Git Bash on Windows), doesn't cover edits made through shell commands, and doesn't block anything in a repository without a remote. Any pushed branch counts, because it may be deployed somewhere (staging, a preview environment). To change a migration you pushed but never applied, edit it yourself or regenerate it with `dotnet ef migrations remove` and `add`.
 - **`postgresql`** (auto, `--database postgres` only): short lists of what models get wrong about PostgreSQL, one area per file, loaded only for the area at hand: GIN doesn't help `->>` equality, `JSON_TABLE` needs PG 17, the table owner bypasses RLS unless it's forced, and so on. Useful when EF Core's defaults aren't enough and you need the right index, a JSONB column, or tenant isolation in the database.
 - **`diagnosing-bugs`** (auto): a phased loop for hard bugs and performance regressions: build a fast, reliable repro first, then hypothesise and instrument. Stops the agent from guessing at fixes.
 
