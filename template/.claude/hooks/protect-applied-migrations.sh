@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUse hook for Edit and Write: blocks changes to EF Core migrations that are
-# already on any remote branch. Any pushed branch may be deployed somewhere (main,
+# in the latest commit of any remote branch. Any pushed branch may be deployed somewhere (main,
 # staging, a preview environment), so its migrations may have been applied to a shared
 # database. Migrations that exist only locally stay editable.
 # Exit 2 blocks the call and shows stderr to Claude; any other path allows it.
@@ -31,16 +31,32 @@ esac
 dir=${file_path%/*}
 [ -d "$dir" ] || exit 0
 
-# --source fills %S with the remote branch the commit was reached from; excluding the
-# */HEAD aliases makes it name the real branch.
-ref=$(git -C "$dir" log --exclude='*/HEAD' --remotes --source -1 --format='%h %S' -- "$file_path" 2>/dev/null)
-[ -z "$ref" ] && exit 0
-commit=${ref%% *}
-branch=${ref#* }
-branch=${branch#refs/remotes/}
+# Path relative to the repository root, as git stores it.
+prefix=$(git -C "$dir" rev-parse --show-prefix 2>/dev/null) || exit 0
+rel="$prefix$name"
+
+refs=()
+while IFS= read -r ref; do
+  case "$ref" in */HEAD) ;; *) refs+=("$ref") ;; esac
+done < <(git -C "$dir" for-each-ref --format='%(refname)' refs/remotes 2>/dev/null)
+[ ${#refs[@]} -eq 0 ] && exit 0
+
+# Look the file up in the latest commit of every remote branch with one git call. This
+# costs the same however long the history is; a migration deleted from a branch's tip
+# no longer counts, and deleting applied migrations breaks the ef-migrations rule anyway.
+i=0
+branch=""
+while IFS= read -r line; do
+  case "$line" in
+    *" missing") ;;
+    *) branch=${refs[$i]#refs/remotes/}; break ;;
+  esac
+  i=$((i + 1))
+done < <(for ref in "${refs[@]}"; do printf '%s:%s\n' "$ref" "$rel"; done | git -C "$dir" cat-file --batch-check 2>/dev/null)
+[ -z "$branch" ] && exit 0
 
 cat >&2 <<EOF
-Blocked: $name is already pushed (commit $commit on $branch), and any pushed branch may be deployed, so it may have been applied to a shared database.
+Blocked: $name is already pushed (on $branch), and any pushed branch may be deployed, so it may have been applied to a shared database.
 Don't edit it. Make the change with a new migration (dotnet ef migrations add <Name>), following the ef-migrations rule.
 If it was never applied anywhere, explain why and ask the user to make the edit.
 EOF
