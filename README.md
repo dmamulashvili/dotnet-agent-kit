@@ -128,6 +128,24 @@ To stop new guesses, add this to the Conventions in `CLAUDE.md`: "Don't infer wh
 - After a session where you had to correct the agent, run `/retro` and accept the edits that would have prevented it.
 - Review the first few `CLAUDE.md` edits closely; a wrong instruction there misleads every later session.
 
+## Update an existing project
+
+Updating the template (`dotnet new update`, or `dotnet new install DotnetAgentKit` again) changes only the template on your machine. Projects you already generated keep their files, including edits from `/retro` and your own changes.
+
+To bring a new version's changes into a project, generate it next to the project and merge:
+
+```bash
+dotnet new agent-kit --frontend blazor -n Orders -o ../kit-tmp   # same options you used before
+```
+
+Then, in Claude Code, on a branch:
+
+> Compare `../kit-tmp/CLAUDE.md` and `../kit-tmp/.claude/` with ours. Bring in the upstream changes, keep our local edits, and list every conflict for me to decide. Don't touch files the kit doesn't ship. Show me the diff before writing.
+
+- Don't run `dotnet new agent-kit --force` in the project: it overwrites `CLAUDE.md`, rules, skills, agents, and settings with the new version and drops your edits.
+- `GLOSSARY.md`, `docs/adr/`, `settings.local.json`, and skills or agents you added yourself aren't kit files; neither updating nor `--force` touches them.
+- Delete `../kit-tmp` when you're done.
+
 ## Included
 
 Copied into the project's `.claude/` folder:
