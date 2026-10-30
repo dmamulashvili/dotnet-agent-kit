@@ -174,7 +174,7 @@ Copied into the project's `.claude/` folder:
 | Agent | `code-reviewer` | Reviews the diff for C#, EF Core, and frontend pitfalls, ranked by severity |
 | Agent | `security-reviewer` | Reviews auth, input handling, secrets, and data exposure |
 | Hook | `protect-applied-migrations` | Blocks edits to EF Core migrations that are already on any remote branch; migrations that exist only locally stay editable |
-| Settings | `settings.json` | Disables commit/PR attribution, git permission guardrails, blocks `dotnet ef database drop` and `database update 0`, blocks reading `.env` files and user secrets (the secrets folders and `dotnet user-secrets list`), runs the migration hook, plugins below |
+| Settings | `settings.json` | Disables commit/PR attribution, git and command guardrails for both Bash and PowerShell, blocks reading secrets and credentials, runs the migration hook, plugins below (see [Guardrails](#guardrails)) |
 
 `grilling`, `grill-me`, `domain-modeling`, `grill-with-docs`, `retro`, `writing-for-agents`, `diagnosing-bugs`, `handoff`, `pr`, `codebase-design`, and `improve-codebase-architecture` are from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), shipped unchanged with their license. Part of `pr` comes from HumanLayer's `show-me` skill in [humanlayer/skills](https://github.com/humanlayer/skills) (MIT); its license is included as `LICENSE-humanlayer.txt`. The `tdd` skill's loop rules are adapted from the same repo. The `postgresql` skill's references are the vendor-neutral PostgreSQL references from [microsoft/postgres-skills](https://github.com/microsoft/postgres-skills) (MIT, commit `9ba96ab`), with their pointers to Azure-only references removed; its `SKILL.md` is ours. The Azure Database for PostgreSQL and Apache AGE skills and the `postgres-mcp` server are not included.
 
@@ -215,6 +215,36 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
 - **`/handoff`**: condenses a long session into a document a fresh agent can continue from, instead of losing context.
 - **`/retro`**: after a session, proposes concrete improvements to `CLAUDE.md`, review rules, and docs, so the same mistake isn't made twice.
 - **`writing-for-agents`** (auto): the style guide used when editing skills, agents, or `CLAUDE.md`; `retro` relies on it.
+
+### Guardrails
+
+`settings.json` sorts risky actions into three groups. Each command rule exists twice, as `Bash(...)` and `PowerShell(...)`, because Claude Code on Windows can run commands through either shell.
+
+- **Denied** in every permission mode:
+  - Force push, `reset --hard`, `git clean`, deleting unmerged branches, rewriting history, skipping hooks.
+  - `dotnet ef database drop` and `database update 0`.
+  - `dotnet nuget push` and `delete`.
+  - `gh repo delete`.
+  - Reading secrets and credentials:
+    - `.env` files, user secrets, and `dotnet user-secrets list`;
+    - ASP.NET Data Protection keys;
+    - `*.pfx`, `*.p12`, and `*.key` files;
+    - `~/.ssh`, `~/.aws`, `~/.azure`, `~/.kube`, and `~/.docker/config.json`.
+- **Ask first**, even in modes that would otherwise run them:
+  - Commits, pushes, merges, and other git writes.
+  - `dotnet ef migrations remove --force`.
+  - Docker commands that delete volumes or prune.
+  - `az`, `aws`, `kubectl`, `terraform`, and `helm`.
+  - `rm -rf`.
+  - `gh pr merge` and `gh release`.
+  - Reading the user-profile `NuGet.Config`, which can hold feed passwords.
+- **Allowed** without asking: read-only git commands.
+
+What they don't do:
+
+- **Rules match command text, not programs.** `git -C . push --force` or `sh -c "…"` isn't matched, and a script that opens a file itself isn't stopped by a `Read` rule. They cover what the agent normally types.
+- **They aren't a security boundary.** For that, use Claude Code's [sandbox](https://code.claude.com/docs/en/sandboxing), which runs on macOS, Linux, and WSL2 but not native Windows, or a dev container.
+- **`appsettings*.json` stays readable,** because the agent needs configuration. Keep secrets in user secrets locally and a secret store when deployed.
 
 ## Day-to-day workflow
 
