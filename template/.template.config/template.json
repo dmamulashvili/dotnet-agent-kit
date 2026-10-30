@@ -15,12 +15,12 @@
     "frontend": {
       "type": "parameter",
       "datatype": "choice",
-      "defaultValue": "svelte",
+      "defaultValue": "none",
       "description": "Frontend framework the agent config targets",
       "choices": [
-        { "choice": "svelte", "description": "SvelteKit with Svelte 5" },
+        { "choice": "none", "description": "No frontend (API only)" },
         { "choice": "blazor", "description": "Blazor Web App" },
-        { "choice": "none", "description": "No frontend (API only)" }
+        { "choice": "svelte", "description": "SvelteKit with Svelte 5" }
       ]
     },
     "database": {

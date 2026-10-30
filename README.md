@@ -30,16 +30,16 @@ dotnet new install ./template
 Run in your project root:
 
 ```bash
-dotnet new agent-kit --frontend svelte
+dotnet new agent-kit                       # API only, PostgreSQL
 dotnet new agent-kit --frontend blazor --database sqlserver
-dotnet new agent-kit --frontend none --database other
-dotnet new agent-kit --frontend blazor --aspire
+dotnet new agent-kit --frontend svelte --aspire
+dotnet new agent-kit --database other
 dotnet new agent-kit --help
 ```
 
 | Option | Values | Default |
 |---|---|---|
-| `--frontend` | `svelte`, `blazor`, `none` (API only) | `svelte` |
+| `--frontend` | `none` (API only), `blazor`, `svelte` | `none` |
 | `--database` | `postgres`, `sqlserver`, `other` (no database-specific guidance) | `postgres` |
 | `--aspire` | flag | off |
 
