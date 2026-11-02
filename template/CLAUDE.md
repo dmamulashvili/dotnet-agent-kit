@@ -39,6 +39,8 @@
 ## Conventions
 - Keep endpoints thin; put logic in handlers, services, or entities (see the `dotnet-architecture` skill).
 - Use async all the way; pass `CancellationToken` through.
+- Don't assume how other systems, old code, or domain terms behave. Before removing error handling or code that looks unnecessary, check `git log`/`git blame` and linked issues to learn why it exists. If it's still unclear, ask me instead of guessing.
+- When code handles a non-obvious case, add a comment saying why, with the issue link. Record quirks of external systems in `docs/adr/` or `GLOSSARY.md`.
 <!--#if (isSvelte) -->
 - Svelte: use `$state`, `$derived`, `$props`. Never use `export let` or `$:`.
 - For any `.svelte` / `.svelte.ts` file, follow the `svelte-core-bestpractices` skill and run `svelte-autofixer` from the `svelte-code-writer` skill; fix every issue it reports.

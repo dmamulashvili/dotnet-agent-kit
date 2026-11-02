@@ -121,8 +121,6 @@ Finish by aligning the instructions with the glossary:
 Update the CLAUDE.md files and rules to match GLOSSARY.md: fix contradictions, and replace domain definitions with a pointer to the glossary. Show me the diff first.
 ```
 
-To stop new guesses, add this to the Conventions in `CLAUDE.md`: "Don't infer what a domain term means from its name or code. Check `GLOSSARY.md`; if a term is missing or unclear, ask me instead of guessing."
-
 ### Keep it accurate
 
 - Keep `CLAUDE.md` under about 200 lines. Instructions for one area go in a nested `CLAUDE.md` (e.g. `web/CLAUDE.md`) or a rule with `paths:` frontmatter; both load only when files there are touched.

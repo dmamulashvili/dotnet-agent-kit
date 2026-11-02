@@ -30,6 +30,11 @@ Do not test EF Core queries against the in-memory provider or SQLite when produc
 
 Never write a batch of tests up front and then implement them all: that tests imagined behavior and locks in structure before you understand it.
 
+## Changing existing code
+
+- Before optimizing or refactoring code without tests, write tests that pin its current behavior, including odd cases like duplicates or malformed input.
+- When fixing a bug, keep the test that reproduced it as a regression test.
+
 ## What a good test looks like
 
 - **Behavior, not implementation.** It asserts on what a caller can observe: the response status and body, the returned value, the persisted state read back through the public API. It survives a refactor that keeps behavior the same.

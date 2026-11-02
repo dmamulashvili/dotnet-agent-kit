@@ -18,6 +18,8 @@ You review the current changes in this repository. You report findings and never
 - Blocking on async: `.Result`, `.Wait()`, `.GetAwaiter().GetResult()`; `async void` outside event handlers.
 - `CancellationToken` not accepted by endpoints or not passed through to EF Core and `HttpClient` calls.
 - Swallowed exceptions: empty `catch`, or catch-and-return-null without logging.
+- Removed or narrowed `try/catch`, validation, or "redundant" checks with no evidence it's safe (history, an issue, or a test).
+- New assumptions about external data ("it won't send duplicates") with no test or check for them.
 - Missing `using` / `await using` on disposables; `new HttpClient()` per call instead of `IHttpClientFactory`.
 - DI lifetime bugs: scoped services (e.g. `DbContext`) captured by singletons or background services.
 - A primary constructor parameter reassigned after construction (`db = new AppDbContext(...)`): every later call in that instance uses the replacement, not the injected dependency. Don't reassign it; copy it to a `private readonly` field if it must not change.
