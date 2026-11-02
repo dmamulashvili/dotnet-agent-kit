@@ -72,7 +72,7 @@ Copy these from `../kit-tmp` into the project root:
 | `.claude/rules/` | `git.md`, `ef-migrations.md` |
 | `.claude/skills/` | All folders, including their `LICENSE*.txt` files |
 | `.claude/agents/` | `architect`, `code-reviewer`, `security-reviewer` |
-| `.claude/hooks/` | `protect-applied-migrations.sh`, run by `settings.json` |
+| `.claude/hooks/` | `protect-applied-migrations.sh` and `format-changed-files.sh`, run by `settings.json` |
 | `.claude/settings.json` | Merge if one exists. Personal overrides go in `.claude/settings.local.json`, which stays out of git |
 
 Commit this on a branch before Claude changes anything, so every later edit to `CLAUDE.md` shows up as a diff you can review. If a Claude Code session is already open in the project, exit it; `claude -c` starts a new one that loads the kit and continues the last conversation.
@@ -174,6 +174,7 @@ Copied into the project's `.claude/` folder:
 | Agent | `code-reviewer` | Reviews the diff for C#, EF Core, and frontend pitfalls, ranked by severity |
 | Agent | `security-reviewer` | Reviews auth, input handling, secrets, and data exposure |
 | Hook | `protect-applied-migrations` | Blocks edits to EF Core migrations that are already on any remote branch; migrations that exist only locally stay editable |
+| Hook | `format-changed-files` | Runs `dotnet format` on the `.cs` files changed since the last commit, once Claude finishes a response |
 | Settings | `settings.json` | Disables commit/PR attribution, git and command guardrails for both Bash and PowerShell, blocks reading secrets and credentials, runs the migration hook, plugins below (see [Guardrails](#guardrails)) |
 
 `grilling`, `grill-me`, `domain-modeling`, `grill-with-docs`, `retro`, `writing-for-agents`, `diagnosing-bugs`, `handoff`, `pr`, `codebase-design`, and `improve-codebase-architecture` are from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), shipped unchanged with their license. Part of `pr` comes from HumanLayer's `show-me` skill in [humanlayer/skills](https://github.com/humanlayer/skills) (MIT); its license is included as `LICENSE-humanlayer.txt`. The `tdd` skill's loop rules are adapted from the same repo. The `postgresql` skill's references are the vendor-neutral PostgreSQL references from [microsoft/postgres-skills](https://github.com/microsoft/postgres-skills) (MIT, commit `9ba96ab`), with their pointers to Azure-only references removed; its `SKILL.md` is ours. The Azure Database for PostgreSQL and Apache AGE skills and the `postgres-mcp` server are not included.
@@ -245,6 +246,27 @@ What they don't do:
 - **Rules match command text, not programs.** `git -C . push --force` or `sh -c "…"` isn't matched, and a script that opens a file itself isn't stopped by a `Read` rule. They cover what the agent normally types.
 - **They aren't a security boundary.** For that, use Claude Code's [sandbox](https://code.claude.com/docs/en/sandboxing), which runs on macOS, Linux, and WSL2 but not native Windows, or a dev container.
 - **`appsettings*.json` stays readable,** because the agent needs configuration. Keep secrets in user secrets locally and a secret store when deployed.
+
+### Formatting
+
+The `format-changed-files` hook runs when Claude finishes a response, not after every edit: `dotnet format` takes about a second even for one file, so formatting per edit would add up quickly. It formats only `.cs` files changed since the last commit, plus new ones, and skips EF Core migrations and generated files. It never stops Claude, and it does nothing when no `.cs` file changed.
+
+Choose the mode in `.claude/settings.json`:
+
+```json
+"env": {
+  "DOTNET_FORMAT_ON_STOP": "full",
+  "DOTNET_FORMAT_WORKSPACE": "src/MyApp.slnx"
+}
+```
+
+| `DOTNET_FORMAT_ON_STOP` | What it does | Cost per response |
+|---|---|---|
+| `whitespace` (default) | Spacing and indentation; doesn't load the project | About 1 second |
+| `full` | Whitespace, code style, and analyzers, the same as a CI `dotnet format --verify-no-changes` check | Several seconds, more on large solutions |
+| `off` | Disabled | None |
+
+`full` needs a solution or project: it uses the only `.sln`, `.slnx`, or `.csproj` in the repository root, or `DOTNET_FORMAT_WORKSPACE`, and falls back to whitespace when there's no single choice. Formatting follows your `.editorconfig`.
 
 ## Day-to-day workflow
 
