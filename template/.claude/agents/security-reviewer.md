@@ -21,6 +21,8 @@ You review the security of the code you are pointed at, or of the current change
 - SQL built from input: string interpolation into `FromSqlRaw` / `ExecuteSqlRaw`, or concatenated ADO.NET commands.
 - Path traversal: user input in file paths without `Path.GetFullPath` plus a base-directory check.
 - Server-side request forgery: user-supplied URLs fetched without an allowlist.
+- Insecure deserialization: `BinaryFormatter`, `NetDataContractSerializer`, or Newtonsoft.Json `TypeNameHandling` other than `None` on untrusted input, which lets the payload choose the type to create.
+- Command injection: user input passed to `Process.Start` or a shell command line. Use `ProcessStartInfo.ArgumentList` with a fixed executable, and validate the input.
 - Unencoded output: `MarkupString` (Blazor) or `{@html}` (Svelte) with user data.
 - Open redirects from unvalidated `returnUrl` parameters (use `LocalRedirect` / `Url.IsLocalUrl`, or `RedirectHttpResult.IsLocalUrl` in minimal APIs).
 

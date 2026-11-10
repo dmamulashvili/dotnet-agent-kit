@@ -189,6 +189,9 @@
       "PowerShell(gh pr merge*)",
       "PowerShell(gh release *)",
       "PowerShell(Remove-Item *-Recurse*)",
+      "Edit(**/.editorconfig)",
+      "Edit(**/.globalconfig)",
+      "Edit(**/*.ruleset)",
       "Read(~/AppData/Roaming/NuGet/NuGet.Config)",
       "Read(~/.nuget/NuGet/NuGet.Config)"
     ],

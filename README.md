@@ -71,7 +71,7 @@ Copy these from `../kit-tmp` into the project root:
 | `CLAUDE.md` | Merge by hand if the project already has one |
 | `.claude/rules/` | `git.md`, `ef-migrations.md` |
 | `.claude/skills/` | All folders, including their `LICENSE*.txt` files |
-| `.claude/agents/` | `architect`, `code-reviewer`, `security-reviewer` |
+| `.claude/agents/` | `architect`, `plan-reviewer`, `code-reviewer`, `security-reviewer` |
 | `.claude/hooks/` | `protect-applied-migrations.sh` and `format-changed-files.sh`, run by `settings.json` |
 | `.claude/settings.json` | Merge if one exists. Personal overrides go in `.claude/settings.local.json`, which stays out of git |
 
@@ -169,13 +169,14 @@ Copied into the project's `.claude/` folder:
 | Skill | `improve-codebase-architecture` | `/improve-codebase-architecture`: finds deepening opportunities in hot spots, renders an HTML report, then grills through the one you pick |
 | Skill | `postgresql` | With `--database postgres`. PostgreSQL gotchas by area: indexing, JSONB, `EXPLAIN ANALYZE`, row-level security, full-text search, partitioning, pooling, extensions, replication, pgvector |
 | Agent | `architect` | Read-only planning: affected areas, API contract, data model, test plan, steps, risks |
+| Agent | `plan-reviewer` | Reviews a saved plan as a fresh reader: paraphrase, simplicity and reuse, contradictions, readiness |
 | Agent | `code-reviewer` | Reviews the diff for C#, EF Core, and frontend pitfalls, ranked by severity |
 | Agent | `security-reviewer` | Reviews auth, input handling, secrets, and data exposure |
 | Hook | `protect-applied-migrations` | Blocks edits to EF Core migrations that are already on any remote branch; migrations that exist only locally stay editable |
 | Hook | `format-changed-files` | Runs `dotnet format` on the `.cs` files changed since the last commit, once Claude finishes a response |
 | Settings | `settings.json` | Disables commit/PR attribution, git and command guardrails for both Bash and PowerShell, blocks reading secrets and credentials, runs the migration hook, plugins below (see [Guardrails](#guardrails)) |
 
-`grilling`, `grill-me`, `domain-modeling`, `grill-with-docs`, `retro`, `writing-for-agents`, `diagnosing-bugs`, `handoff`, `pr`, `codebase-design`, and `improve-codebase-architecture` are from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), shipped unchanged with their license. Part of `pr` comes from HumanLayer's `show-me` skill in [humanlayer/skills](https://github.com/humanlayer/skills) (MIT); its license is included as `LICENSE-humanlayer.txt`. The `tdd` skill's loop rules are adapted from the same repo. The `postgresql` skill's references are the vendor-neutral PostgreSQL references from [microsoft/postgres-skills](https://github.com/microsoft/postgres-skills) (MIT, commit `9ba96ab`), with their pointers to Azure-only references removed; its `SKILL.md` is ours. The Azure Database for PostgreSQL and Apache AGE skills and the `postgres-mcp` server are not included.
+`grilling`, `grill-me`, `domain-modeling`, `grill-with-docs`, `retro`, `writing-for-agents`, `diagnosing-bugs`, `handoff`, `pr`, `codebase-design`, and `improve-codebase-architecture` are from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), shipped unchanged with their license. Part of `pr` comes from HumanLayer's `show-me` skill in [humanlayer/skills](https://github.com/humanlayer/skills) (MIT); its license is included as `LICENSE-humanlayer.txt`. The `tdd` skill's loop rules are adapted from the same repo. The `postgresql` skill's references are the vendor-neutral PostgreSQL references from [microsoft/postgres-skills](https://github.com/microsoft/postgres-skills) (MIT, commit `9ba96ab`), with their pointers to Azure-only references removed; its `SKILL.md` is ours. The Azure Database for PostgreSQL and Apache AGE skills and the `postgres-mcp` server are not included. The fresh-reader review and paraphrase-first check in `plan-reviewer` are ideas from Google's [elephant-goldfish-model](https://github.com/google/elephant-goldfish-model), written in our own words. The analyzer-config ask rules and several reviewer checks (silenced warnings, multiple enumeration, static mutable state, insecure deserialization, command injection) are ideas from [ECC](https://github.com/affaan-m/ECC) (MIT), also in our own words.
 
 ## Why each piece is there
 
@@ -200,7 +201,8 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
 
 ### Reviewing
 
-- **`code-reviewer`** (agent, run after every code change per `CLAUDE.md`): .NET-specific review: blocking async, missing `CancellationToken`, DI lifetime bugs, N+1 and unbounded EF queries, broken module seams, abstractions without a need, plus frontend checks.
+- **`plan-reviewer`** (agent, run per `CLAUDE.md` on saved plans that change the data model, a public API, or several projects; on request for others): reads the saved plan with none of the conversation behind it. It paraphrases the plan first, so you can see a misunderstanding in a few sentences, then checks its claims against the code and searches for existing code that makes new parts unnecessary. Plan mistakes are the cheapest to fix here.
+- **`code-reviewer`** (agent, run after every code change per `CLAUDE.md`): .NET-specific review: blocking async, missing `CancellationToken`, DI lifetime bugs, N+1 and unbounded EF queries, broken module seams, abstractions without a need, plus frontend checks. It opens with a short summary of what the change does, so a misread diff shows up right away.
 - **`security-reviewer`** (agent, run for security-sensitive changes): auth and ownership checks, tenant query filters, validation, SQL and path injection, secrets, CORS, and unsafe HTML output.
 
 ### Shipping
@@ -237,6 +239,7 @@ Skills marked *auto* load when the agent sees a matching task; their one-line de
   - `rm -rf`.
   - `gh pr merge` and `gh release`.
   - Reading the user-profile `NuGet.Config`, which can hold feed passwords.
+  - Editing `.editorconfig`, `.globalconfig`, or `*.ruleset`, so the agent fixes a warning instead of switching the check off.
 - **Allowed** without asking: read-only git commands.
 
 What they don't do:
@@ -279,7 +282,7 @@ You type requests in plain language in the Claude Code prompt. The kit adds four
 | Rules (`git`, `ef-migrations`) | Always loaded | Nothing |
 | Auto skills (`tdd`, `api-design`, `dotnet-architecture`, ...) | The agent loads one when your request matches it | Nothing; mention the skill by name if it didn't load ("use the tdd skill") |
 | Slash commands (`/grill-me`, `/handoff`, `/retro`, ...) | Only when you type them | Type `/` and pick from the list |
-| Agents (`architect`, `code-reviewer`, `security-reviewer`) | The agent may delegate on its own; the reviewers run after code changes because `CLAUDE.md` says so | To force one, type `@` and pick it, or write `@agent-architect` |
+| Agents (`architect`, `plan-reviewer`, `code-reviewer`, `security-reviewer`) | The agent may delegate on its own; `CLAUDE.md` makes `plan-reviewer` run on saved plans that change the data model, a public API, or several projects, and the other reviewers after code changes | To force one, type `@` and pick it, or write `@agent-architect` |
 
 ### Small change or obvious bug
 
@@ -299,12 +302,13 @@ The `ef-migrations` rule makes it create the migration with `dotnet ef`, read th
    > @agent-architect plan partial refunds, based on the grilling above.
 
    Read the plan: affected slices, endpoints, the migration and whether it loses data, the test plan. Push back now; it is cheaper than after the code exists.
-3. **Build test-first.**
+3. **Review the plan.** The agent asks whether to save it to `docs/plans/`; say yes. Because partial refunds change the data model, it then runs `plan-reviewer` on the file, and it asks whether to record each ADR candidate. Compare its paraphrase with what you meant, and settle anything it flags as a decision. Delete the plan once the feature ships, unless it's worth keeping; lasting decisions belong in `docs/adr/`.
+4. **Build test-first.**
    > Implement step 1 of the plan with TDD.
 
    `tdd` writes a failing `WebApplicationFactory` test against a Testcontainers database, then the code. `api-design` and `dotnet-architecture` load on their own when endpoints or structure come up.
-4. **Review.** `code-reviewer` runs before the agent says it's done, and `security-reviewer` too here, since refunds touch money and ownership checks. Read the findings; Critical and High get fixed in the same session.
-5. **Ship.** Ask for a commit message, then:
+5. **Review.** `code-reviewer` runs before the agent says it's done, and `security-reviewer` too here, since refunds touch money and ownership checks. Read the findings; Critical and High get fixed in the same session.
+6. **Ship.** Ask for a commit message, then:
    > Write the PR description.
 
    `pr` produces a summary, evidence, and the merge danger (here: a new table, additive migration, low blast radius).

@@ -24,6 +24,9 @@ You review the current changes in this repository. You report findings and never
 - DI lifetime bugs: scoped services (e.g. `DbContext`) captured by singletons or background services.
 - A primary constructor parameter reassigned after construction (`db = new AppDbContext(...)`): every later call in that instance uses the replacement, not the injected dependency. Don't reassign it; copy it to a `private readonly` field if it must not change.
 - Nullable warnings suppressed with `!` without a reason.
+- Warnings silenced instead of fixed: new `#pragma warning disable`, `NoWarn`, `[SuppressMessage]`, or weakened `.editorconfig`/analyzer severity, with no stated reason.
+- An `IEnumerable<T>` enumerated more than once, which repeats a query or a lazy computation; materialize it once with `ToList()` or `ToArray()`.
+- Static mutable state (`static` fields or collections changed at runtime) shared across requests: race conditions under load. Use DI-scoped state, `ConcurrentDictionary`, or `Interlocked`.
 - Endpoints returning EF entities, missing validation, wrong status codes, or errors not using ProblemDetails (see the `api-design` skill).
 - Business logic in endpoints instead of handlers, services, or the entity.
 - `DateTime.UtcNow` / `DateTime.Now` in business logic instead of an injected `TimeProvider`.
@@ -72,7 +75,9 @@ You review the current changes in this repository. You report findings and never
 
 ## Report format
 
-Group findings by severity:
+Start with 2-3 sentences on what the change does, judged from the diff and code alone. The author compares this with what they meant, so a wrong summary is a finding.
+
+Then group findings by severity:
 
 - **Critical**: bugs, data loss, security issues. Must fix.
 - **High**: likely bugs under realistic conditions, performance problems. Should fix.
