@@ -56,3 +56,5 @@
 - After UI changes, start the dev server and verify the page with the `agent-browser` skill before finishing.
 <!--#endif -->
 - After code changes, run the `code-reviewer` agent before finishing; also run `security-reviewer` when the change touches auth, input handling, data access, secrets, or external calls. Fix Critical and High findings.
+- When `architect` produces a plan, ask me whether to save it to `docs/plans/<short-name>.md`. Once it's saved, run the `plan-reviewer` agent on it before implementing if the plan changes the data model, a public API, or several projects; otherwise offer to. Show me its paraphrase and findings, and update the plan for Critical and High findings; ask me about any that need a decision. For each ADR candidate in the plan, ask whether to record it with the `domain-modeling` skill.
+- Start reviewer agents with only the scope to review (a file path or diff range). They judge the work fresh, so keep your reasoning and expectations out of the prompt.
